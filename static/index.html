@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnite Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0a0c10;
+    --surface:  #111318;
+    --border:   #1e2230;
+    --muted:    #3a3f55;
+    --text:     #e8eaf2;
+    --sub:      #7b80a0;
+    --gold:     #f5c842;
+    --blue:     #4f9cf9;
+    --green:    #3dd68c;
+    --red:      #f25f5c;
+    --purple:   #9b72f9;
+    --solo:     #4f9cf9;
+    --duos:     #3dd68c;
+    --squads:   #f5c842;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #0f1220 0%, var(--bg) 100%);
+  }
+
+  .logo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .logo span { color: var(--blue); }
+
+  .refresh-btn {
+    background: none;
+    border: 1px solid var(--muted);
+    color: var(--sub);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all .2s;
+  }
+
+  .refresh-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* LAYOUT */
+  main { max-width: 1200px; margin: 0 auto; padding: 40px 24px 0; }
+
+  /* PLAYER HEADER CARDS */
+  .players-grid {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    margin-bottom: 48px;
+    align-items: center;
+  }
+
+  .vs-badge {
+    text-align: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .player-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .player-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .player-card.p1::before { background: var(--blue); }
+  .player-card.p2::before { background: var(--gold); }
+
+  .player-card.p1 { border-radius: 4px 0 0 4px; }
+  .player-card.p2 { border-radius: 0 4px 4px 0; }
+
+  .player-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--sub);
+    margin-bottom: 6px;
+  }
+
+  .player-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .hero-stat-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--sub);
+    margin-bottom: 4px;
+  }
+
+  .hero-stat-value {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .hero-stat-value.highlight { color: var(--gold); }
+
+  .hero-stat-sub {
+    font-size: 10px;
+    color: var(--sub);
+    margin-top: 2px;
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--sub);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* COMPARISON TABLE */
+  .compare-section { margin-bottom: 48px; }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .compare-table tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .compare-table tr:last-child { border-bottom: none; }
+
+  .compare-table td {
+    padding: 14px 0;
+    font-size: 13px;
+  }
+
+  .compare-table .stat-name {
+    text-align: center;
+    color: var(--sub);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    width: 160px;
+  }
+
+  .compare-table .p1-val {
+    text-align: right;
+    padding-right: 32px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--blue);
+  }
+
+  .compare-table .p2-val {
+    text-align: left;
+    padding-left: 32px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  .compare-table .p1-val.winner,
+  .compare-table .p2-val.winner {
+    color: var(--green);
+  }
+
+  /* BAR COMPARISON */
+  .bar-compare {
+    display: flex;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 2px 0 6px;
+  }
+
+  .bar-p1 { background: var(--blue); transition: width .6s ease; }
+  .bar-p2 { background: var(--gold); transition: width .6s ease; }
+
+  /* MODE CARDS */
+  .modes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .mode-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .mode-header {
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mode-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .mode-title.solo   { color: var(--solo); }
+  .mode-title.duos   { color: var(--duos); }
+  .mode-title.squads { color: var(--squads); }
+
+  .mode-body { padding: 0; }
+
+  .mode-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mode-row:last-child { border-bottom: none; }
+
+  .mode-cell {
+    padding: 16px 20px;
+    border-right: 1px solid var(--border);
+  }
+
+  .mode-cell:last-child { border-right: none; }
+
+  .mode-cell-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--sub);
+    margin-bottom: 6px;
+  }
+
+  .mode-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .mode-stat {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .mode-stat.p1 { color: var(--blue); }
+  .mode-stat.p2 { color: var(--gold); }
+  .mode-stat.winner { color: var(--green); }
+
+  /* LOADING / ERROR */
+  .loading {
+    text-align: center;
+    padding: 80px 0;
+    color: var(--sub);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+  .error-msg {
+    background: #1a0f0f;
+    border: 1px solid #3d1515;
+    color: var(--red);
+    padding: 16px 24px;
+    font-size: 12px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+
+  /* LAST UPDATED */
+  .updated {
+    text-align: right;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+
+  /* PLAYTIME */
+  .playtime-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .playtime-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .playtime-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--sub); }
+  .playtime-value { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; }
+  .playtime-value.p1 { color: var(--blue); }
+  .playtime-value.p2 { color: var(--gold); }
+
+  @media (max-width: 768px) {
+    header { padding: 16px 20px; }
+    main { padding: 24px 16px 0; }
+    .players-grid { grid-template-columns: 1fr; gap: 8px; }
+    .vs-badge { display: none; }
+    .player-card.p1, .player-card.p2 { border-radius: 4px; }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    .modes-grid { grid-template-columns: 1fr; }
+    .playtime-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Fortnite <span>Stats</span></div>
+  <button class="refresh-btn" onclick="loadStats()">↻ Refresh</button>
+</header>
+
+<main>
+  <div id="app"><div class="loading">Henter stats...</div></div>
+</main>
+
+<script>
+async function loadStats() {
+  document.getElementById('app').innerHTML = '<div class="loading">Henter stats...</div>';
+  try {
+    const res = await fetch('/api/stats');
+    const players = await res.json();
+    render(players);
+  } catch(e) {
+    document.getElementById('app').innerHTML = `<div class="error-msg">Kunne ikke hente data: ${e.message}</div>`;
+  }
+}
+
+function fmt(n, decimals = 0) {
+  if (n === undefined || n === null) return '–';
+  return Number(n).toLocaleString('da-DK', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+function hours(min) {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h}t ${m}m`;
+}
+
+function winner(a, b) {
+  // returns 1 if a wins, 2 if b wins, 0 if tie
+  if (a > b) return 1;
+  if (b > a) return 2;
+  return 0;
+}
+
+function barWidths(a, b) {
+  const total = a + b;
+  if (!total) return [50, 50];
+  return [Math.round(a / total * 100), Math.round(b / total * 100)];
+}
+
+function compareRow(label, a, b, decimals = 0, higherIsBetter = true) {
+  const w = higherIsBetter ? winner(a, b) : winner(b, a);
+  const [w1, w2] = barWidths(a, b);
+  return `
+    <tr>
+      <td class="p1-val ${w===1?'winner':''}">${fmt(a, decimals)}</td>
+      <td class="stat-name">
+        ${label}
+        <div class="bar-compare">
+          <div class="bar-p1" style="width:${w1}%"></div>
+          <div class="bar-p2" style="width:${w2}%"></div>
+        </div>
+      </td>
+      <td class="p2-val ${w===2?'winner':''}">${fmt(b, decimals)}</td>
+    </tr>`;
+}
+
+function modeSection(p1, p2, modeKey, modeLabel, colorClass) {
+  const m1 = p1.modes?.[modeKey] || {};
+  const m2 = p2.modes?.[modeKey] || {};
+
+  function modeCell(val1, val2, label, decimals = 0, hib = true) {
+    const w = hib ? winner(val1, val2) : winner(val2, val1);
+    return `
+      <div class="mode-cell">
+        <div class="mode-cell-label">${label}</div>
+        <div class="mode-stat-row">
+          <span class="mode-stat p1 ${w===1?'winner':''}">${fmt(val1, decimals)}</span>
+          <span class="mode-stat p2 ${w===2?'winner':''}">${fmt(val2, decimals)}</span>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="mode-card">
+      <div class="mode-header">
+        <span class="mode-title ${colorClass}">${modeLabel}</span>
+        <span style="font-size:11px;color:var(--sub)">${fmt(m1.matches)} vs ${fmt(m2.matches)} kampe</span>
+      </div>
+      <div class="mode-body">
+        <div class="mode-row">
+          ${modeCell(m1.wins, m2.wins, 'Wins')}
+          ${modeCell(m1.winPct, m2.winPct, 'Win %', 1)}
+        </div>
+        <div class="mode-row">
+          ${modeCell(m1.kills, m2.kills, 'Kills')}
+          ${modeCell(m1.kd, m2.kd, 'K/D', 2)}
+        </div>
+      </div>
+    </div>`;
+}
+
+function render(players) {
+  const p1 = players[0];
+  const p2 = players[1];
+
+  if (p1.error && p2.error) {
+    document.getElementById('app').innerHTML = `<div class="error-msg">Kunne ikke hente data for nogen af spillerne. Tjek om navnene er korrekte og at stats er offentlige på fortnite-api.com.</div>`;
+    return;
+  }
+
+  const o1 = p1.overall || {};
+  const o2 = p2.overall || {};
+
+  const now = new Date().toLocaleString('da-DK');
+
+  let html = `<div class="updated">Opdateret: ${now}</div>`;
+
+  if (p1.error || p2.error) {
+    const errName = p1.error ? p1.name : p2.name;
+    html += `<div class="error-msg">Advarsel: Kunne ikke hente data for "${errName}". Profilen er muligvis privat eller brugernavnet er forkert.</div>`;
+  }
+
+  // PLAYER HERO CARDS
+  html += `<div class="players-grid">
+    <div class="player-card p1">
+      <div class="player-label">Spiller 1</div>
+      <div class="player-name">${p1.name}</div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-label">Win %</div>
+          <div class="hero-stat-value highlight">${fmt(o1.winPct, 1)}%</div>
+          <div class="hero-stat-sub">${fmt(o1.wins)} wins</div>
+        </div>
+        <div>
+          <div class="hero-stat-label">K/D</div>
+          <div class="hero-stat-value">${fmt(o1.kd, 2)}</div>
+          <div class="hero-stat-sub">${fmt(o1.kills)} kills</div>
+        </div>
+        <div>
+          <div class="hero-stat-label">Kampe</div>
+          <div class="hero-stat-value">${fmt(o1.matches)}</div>
+        </div>
+        <div>
+          <div class="hero-stat-label">Top 10</div>
+          <div class="hero-stat-value">${fmt(o1.top10)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vs-badge">VS</div>
+
+    <div class="player-card p2">
+      <div class="player-label">Spiller 2</div>
+      <div class="player-name">${p2.name}</div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-label">Win %</div>
+          <div class="hero-stat-value highlight">${fmt(o2.winPct, 1)}%</div>
+          <div class="hero-stat-sub">${fmt(o2.wins)} wins</div>
+        </div>
+        <div>
+          <div class="hero-stat-label">K/D</div>
+          <div class="hero-stat-value">${fmt(o2.kd, 2)}</div>
+          <div class="hero-stat-sub">${fmt(o2.kills)} kills</div>
+        </div>
+        <div>
+          <div class="hero-stat-label">Kampe</div>
+          <div class="hero-stat-value">${fmt(o2.matches)}</div>
+        </div>
+        <div>
+          <div class="hero-stat-label">Top 10</div>
+          <div class="hero-stat-value">${fmt(o2.top10)}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // PLAYTIME
+  html += `<div class="section-title">Spilletid</div>
+  <div class="playtime-row">
+    <div class="playtime-card">
+      <div><div class="playtime-label">${p1.name}</div></div>
+      <div class="playtime-value p1">${o1.minutesPlayed ? hours(o1.minutesPlayed) : '–'}</div>
+    </div>
+    <div class="playtime-card">
+      <div><div class="playtime-label">${p2.name}</div></div>
+      <div class="playtime-value p2">${o2.minutesPlayed ? hours(o2.minutesPlayed) : '–'}</div>
+    </div>
+  </div>`;
+
+  // COMPARE TABLE
+  html += `<div class="compare-section">
+    <div class="section-title">Head-to-head sammenligning</div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <td class="p1-val" style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--blue);font-family:'DM Mono'">${p1.name}</td>
+          <td class="stat-name"></td>
+          <td class="p2-val" style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-family:'DM Mono'">${p2.name}</td>
+        </tr>
+      </thead>
+      <tbody>
+        ${compareRow('Wins', o1.wins, o2.wins)}
+        ${compareRow('Win %', o1.winPct, o2.winPct, 1)}
+        ${compareRow('Kills', o1.kills, o2.kills)}
+        ${compareRow('K/D Ratio', o1.kd, o2.kd, 2)}
+        ${compareRow('Kampe', o1.matches, o2.matches)}
+        ${compareRow('Top 10', o1.top10, o2.top10)}
+        ${compareRow('Top 25', o1.top25, o2.top25)}
+      </tbody>
+    </table>
+  </div>`;
+
+  // MODE BREAKDOWN
+  html += `<div class="section-title">Pr. mode</div>
+  <div class="modes-grid">
+    ${modeSection(p1, p2, 'solo',   'Solo',   'solo')}
+    ${modeSection(p1, p2, 'duos',   'Duos',   'duos')}
+    ${modeSection(p1, p2, 'squads', 'Squads', 'squads')}
+  </div>`;
+
+  document.getElementById('app').innerHTML = html;
+}
+
+loadStats();
+</script>
+</body>
+</html>
